@@ -1,0 +1,24 @@
+{
+  "name": "ppi-formulario",
+  "version": "1.0.0",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/thiagomartinss/PPI-formulario.git"
+  },
+  "author": "Thiago Martins",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/thiagomartinss/PPI-formulario/issues"
+  },
+  "homepage": "https://github.com/thiagomartinss/PPI-formulario#readme",
+  "description": "",
+  "dependencies": {
+    "express": "^5.1.0"
+  }
+}
