@@ -856,8 +856,72 @@ app.get("/login", (requisicao, resposta) => {
 app.post("/login", (requisicao, resposta) => {
     const usuario = requisicao.body.login;
     const senha = requisicao.body.senha;
-    //Realizar validação
-    resposta.redirect("/");
+    if(usuario & senha){
+        resposta.redirect("/");
+    }else{
+        var conteudo = `
+        <html lang="pt-br">
+            <head>
+                <meta charset="UTF-8">
+                <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+                <title>Login do Sistema</title>
+                <style>
+                    .gradient-custom {
+                        background: linear-gradient(to right, rgba(106, 17, 203, 1), rgba(37, 117, 252, 1));
+                    }
+                </style>
+            </head>
+            <body>
+                <main>
+                    <section class="vh-100 gradient-custom">
+                        <div class="container py-5 h-100">
+                            <div class="row d-flex justify-content-center align-items-center h-100">
+                                <div class="col-12 col-md-8 col-lg-6 col-xl-5">
+                                    <div class="card bg-dark text-white" style="border-radius: 1rem;">
+                                        <div class="card-body p-5 text-center">
+                                            <div class="mb-md-5 mt-md-4 pb-5">
+                                                <h2 class="fw-bold mb-2 text-uppercase">Login</h2>
+                                                <form method="POST" action="/login">
+                                                    <div class="form-floating mb-4 mt-4">`;
+                                                        if (!usuario) {
+                                                            conteudo += `
+                                                            <input type="text" id="usuario" name="usuario" class="form-control form-control-lg"/>
+                                                            <label class="form-label" for="usuario">Usuário</label>
+                                                            <span class="text-danger">Digite o Usuário</span>`;
+                                                        }else{
+                                                            conteudo += `
+                                                            <input type="text" id="usuario" name="usuario" class="form-control form-control-lg" value="${usuario}"/>
+                                                            <label class="form-label" for="usuario">Usuário</label>`;
+                                                        }
+                                                        conteudo += `</div>
+                                                        <div class="form-floating mb-4">`;
+                                                        if (!senha) {
+                                                            conteudo += `
+                                                            <input type="password" id="senha" name="senha" class="form-control form-control-lg" />
+                                                            <label class="form-label" for="senha">Senha</label>
+                                                            <span class="text-danger">Digite a senha</span>`;
+                                                        }else{
+                                                            conteudo += `
+                                                            <input type="password" id="senha" name="senha" class="form-control form-control-lg" />
+                                                            <label class="form-label" for="senha">Senha</label>`;
+                                                        }      
+                                                        conteudo += `</div>
+                                                    <button class="btn btn-outline-light btn-lg px-5" type="submit">Entrar</button>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+                </main>
+            </body>
+            <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+        </html>`;
+    } 
+    resposta.send(conteudo);
+    resposta.end();   
 });
 
 app.get("/logout", (requisicao, resposta) => {
