@@ -1,15 +1,34 @@
 import express from 'express';
+import session from 'express-session';
+import cookieParser from 'cookie-parser';
 
 const host = "0.0.0.0";
 const port = 3000;
+const app = express();
+
 var clientes = [];
 var fornecedores = [];
-
-const app = express();
+var logado = false
 
 app.use(express.urlencoded({ extended: true }));//processar o formulario
 
-app.get("/", (requisicao, resposta) => {
+//configurar o uso de sessão, adicionando o middleware de sessão
+app.use(session({
+    secret: "M1nh4Ch4v3S3cr3t4", // o correto é usar variável de ambiente
+    resave: false,
+    saveUninitialized: true,
+    cookie:{ // define o tempo de expiração da sessão
+        maxAge: 1000 * 60 * 15, //15 minutos
+        httpOnly: true,
+        secure: false // true se for HTTPS
+    }
+}));
+
+// permite o uso de cookies para permitir aplicação let e escrever cookies no navegador
+app.use(cookieParser()); 
+
+app.get("/", verificarAutenticacao, (requisicao, resposta) => {
+    const ultimoLogin = requisicao.cookies.ultimoLogin;
     resposta.send(`
             <!DOCTYPE html>
             <html lang="pt-br">
@@ -46,6 +65,7 @@ app.get("/", (requisicao, resposta) => {
                                     </li>
                                 </ul>
                             </div>
+                            <span class=navbar-text ms-auto>${ultimoLogin?"Último login: " + ultimoLogin: ""}</span>
                         </div>
                     </nav>
                 </body>
@@ -55,7 +75,7 @@ app.get("/", (requisicao, resposta) => {
     resposta.end();
 });
 
-app.get("/cadastroCliente", (requisicao, resposta) => {
+app.get("/cadastroCliente", verificarAutenticacao,(requisicao, resposta) => {
     resposta.send(`
             <html lang="pt-br">
                 <head>
@@ -165,7 +185,7 @@ app.get("/cadastroCliente", (requisicao, resposta) => {
     resposta.end();
 });
 
-app.get("/cadastroFornecedor", (requisicao, resposta) => {
+app.get("/cadastroFornecedor", verificarAutenticacao,(requisicao, resposta) => {
     resposta.send(`
         <html lang="pt-br">
             <head>
@@ -236,7 +256,7 @@ app.get("/cadastroFornecedor", (requisicao, resposta) => {
 });
 
 
-app.post("/cadastroCliente", (requisicao, resposta) => {
+app.post("/cadastroCliente", verificarAutenticacao, (requisicao, resposta) => {
     const nome = requisicao.body.primeiroNome;
     const sobrenome = requisicao.body.ultimoNome;
     const telefone = requisicao.body.telefone;
@@ -509,7 +529,7 @@ app.post("/cadastroCliente", (requisicao, resposta) => {
     resposta.end();
 });
 
-app.post("/cadastroFornecedor", (requisicao, resposta) => {
+app.post("/cadastroFornecedor", verificarAutenticacao, (requisicao, resposta) => {
     const cnpj = requisicao.body.cnpj;
     const razaoSocial = requisicao.body.razaoSocial;
     const nomeFantasia = requisicao.body.nomeFantasia;
@@ -685,7 +705,7 @@ app.post("/cadastroFornecedor", (requisicao, resposta) => {
     }
 });
 
-app.get("/listaClientes", (requisicao, resposta) => {
+app.get("/listaClientes", verificarAutenticacao, (requisicao, resposta) => {
     let conteudo =`
             <html lang="pt-br">
                 <head>
@@ -746,7 +766,7 @@ app.get("/listaClientes", (requisicao, resposta) => {
     resposta.end();
 });
 
-app.get("/listarFornecedores", (requisicao, resposta) => {
+app.get("/listarFornecedores", verificarAutenticacao, (requisicao, resposta) => {
     let conteudo =`
         <html lang="pt-br">
             <head>
@@ -856,76 +876,77 @@ app.get("/login", (requisicao, resposta) => {
 app.post("/login", (requisicao, resposta) => {
     const usuario = requisicao.body.login;
     const senha = requisicao.body.senha;
-    if(usuario & senha){
+    if(usuario == "admin" && senha == "123"){
+        requisicao.session.logado = true;
+        const dataHoraAtual = new Date();
+        resposta.cookie('ultimoLogin', dataHoraAtual.toLocaleString(), {maxAge: 1000* 60 * 60 * 24 * 30}); // 30 dias
         resposta.redirect("/");
     }else{
-        var conteudo = `
-        <html lang="pt-br">
-            <head>
-                <meta charset="UTF-8">
-                <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-                <title>Login do Sistema</title>
-                <style>
-                    .gradient-custom {
-                        background: linear-gradient(to right, rgba(106, 17, 203, 1), rgba(37, 117, 252, 1));
-                    }
-                </style>
-            </head>
-            <body>
-                <main>
-                    <section class="vh-100 gradient-custom">
-                        <div class="container py-5 h-100">
-                            <div class="row d-flex justify-content-center align-items-center h-100">
-                                <div class="col-12 col-md-8 col-lg-6 col-xl-5">
-                                    <div class="card bg-dark text-white" style="border-radius: 1rem;">
-                                        <div class="card-body p-5 text-center">
-                                            <div class="mb-md-5 mt-md-4 pb-5">
-                                                <h2 class="fw-bold mb-2 text-uppercase">Login</h2>
-                                                <form method="POST" action="/login">
-                                                    <div class="form-floating mb-4 mt-4">`;
-                                                        if (!usuario) {
-                                                            conteudo += `
-                                                            <input type="text" id="usuario" name="usuario" class="form-control form-control-lg"/>
-                                                            <label class="form-label" for="usuario">Usuário</label>
-                                                            <span class="text-danger">Digite o Usuário</span>`;
-                                                        }else{
-                                                            conteudo += `
-                                                            <input type="text" id="usuario" name="usuario" class="form-control form-control-lg" value="${usuario}"/>
-                                                            <label class="form-label" for="usuario">Usuário</label>`;
-                                                        }
-                                                        conteudo += `</div>
-                                                        <div class="form-floating mb-4">`;
-                                                        if (!senha) {
-                                                            conteudo += `
-                                                            <input type="password" id="senha" name="senha" class="form-control form-control-lg" />
-                                                            <label class="form-label" for="senha">Senha</label>
-                                                            <span class="text-danger">Digite a senha</span>`;
-                                                        }else{
-                                                            conteudo += `
-                                                            <input type="password" id="senha" name="senha" class="form-control form-control-lg" />
-                                                            <label class="form-label" for="senha">Senha</label>`;
-                                                        }      
-                                                        conteudo += `</div>
-                                                    <button class="btn btn-outline-light btn-lg px-5" type="submit">Entrar</button>
-                                                </form>
+        resposta.send(`
+                    <html lang="pt-br">
+                        <head>
+                            <meta charset="UTF-8">
+                            <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+                            <title>Login do Sistema</title>
+                            <style>
+                                .gradient-custom {
+                                    /* fallback for old browsers */
+                                    background: #6a11cb;
+                                    /* Chrome 10-25, Safari 5.1-6 */
+                                    background: -webkit-linear-gradient(to right, rgba(106, 17, 203, 1), rgba(37, 117, 252, 1));
+                                    /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
+                                    background: linear-gradient(to right, rgba(106, 17, 203, 1), rgba(37, 117, 252, 1))
+                                }
+                            </style>
+                        </head>
+                        <body>
+                            <main>
+                                <section class="vh-100 gradient-custom">
+                                    <div class="container py-5 h-100">
+                                        <div class="row d-flex justify-content-center align-items-center h-100">
+                                            <div class="col-12 col-md-8 col-lg-6 col-xl-5">
+                                                <div class="card bg-dark text-white" style="border-radius: 1rem;">
+                                                    <div class="card-body p-5 text-center">
+                                                        <div class="mb-md-5 mt-md-4 pb-5">
+                                                            <form id="login-form" class="form" action="" method="post">
+                                                                <h2 class="fw-bold mb-2 text-uppercase">Login</h2>
+                                                                <div data-mdb-input-init class="form-floating mb-4 mt-4">
+                                                                    <input type="text" id="login" name="login" class="form-control form-control-lg" />
+                                                                    <label class="form-label" for="login">Usuário</label>
+                                                                </div>
+                                                                <div data-mdb-input-init class="form-floating mb-4">
+                                                                    <input type="password" id="senha" name="senha" class="form-control form-control-lg" />
+                                                                    <label class="form-label" for="senha">Senha</label>
+                                                                    <span class="text-danger">Usuário ou senha inválidos!</span>
+                                                                </div>
+                                                                <button data-mdb-button-init data-mdb-ripple-init class="btn btn-outline-light btn-lg px-5" type="submit">Entrar</button>
+                                                            </form>
+                                                        </div>
+                                                    </div>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
-                                </div>
-                            </div>
-                        </div>
-                    </section>
-                </main>
-            </body>
-            <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-        </html>`;
-    } 
-    resposta.send(conteudo);
-    resposta.end();   
+                                </section>
+                            </main>
+                        </body>
+                        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+                    </html>`
+        );
+    }
 });
 
+function verificarAutenticacao(requisicao, resposta, next){
+    if(requisicao.session.logado){
+        next(); 
+    }else{
+        resposta.redirect("/login");
+    }
+}
+
 app.get("/logout", (requisicao, resposta) => {
-    resposta.send("<p>Você saiu do sistema.</p>");
+    requisicao.session.destroy();
+    resposta.redirect("/login");
 });
 
 app.listen(port,host, () =>{
