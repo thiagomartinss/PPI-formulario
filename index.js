@@ -8,6 +8,7 @@ const app = express();
 
 var clientes = [];
 var fornecedores = [];
+var produtos = [];
 var logado = false
 
 app.use(express.urlencoded({ extended: true }));//processar o formulario
@@ -51,6 +52,7 @@ app.get("/", verificarAutenticacao, (requisicao, resposta) => {
                                         <ul class="dropdown-menu">
                                             <li><a class="dropdown-item" href="/cadastroCliente">Cadastros de Cliente</a></li>
                                             <li><a class="dropdown-item" href="/cadastroFornecedor">Cadastros de fornecedor</a></li>
+                                            <li><a class="dropdown-item" href="/cadastroProduto">Cadastros de produto</a></li>
                                         </ul>
                                     </li>
                                     <li class="nav-item dropdown">
@@ -58,6 +60,7 @@ app.get("/", verificarAutenticacao, (requisicao, resposta) => {
                                         <ul class="dropdown-menu">
                                             <li><a class="dropdown-item" href="/listaClientes">Lista de clientes</a></li>
                                             <li><a class="dropdown-item" href="/listarFornecedores">Lista de Fornecedores</a></li>
+                                            <li><a class="dropdown-item" href="/listarProdutos">Lista de Produtos</a></li>
                                         </ul>
                                     </li>
                                     <li class="nav-item">
@@ -76,6 +79,7 @@ app.get("/", verificarAutenticacao, (requisicao, resposta) => {
 });
 
 app.get("/cadastroCliente", verificarAutenticacao,(requisicao, resposta) => {
+    const ultimoLogin = requisicao.cookies.ultimoLogin;
     resposta.send(`
             <html lang="pt-br">
                 <head>
@@ -84,6 +88,11 @@ app.get("/cadastroCliente", verificarAutenticacao,(requisicao, resposta) => {
                     <title>Página inicial</title>
                 </head>
                 <body>
+                    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+                        <div class="container-fluid">
+                            <span class=navbar-text ms-auto>${ultimoLogin?"Último login: " + ultimoLogin: ""}</span>
+                        </div>
+                    </nav>
                     <main class="container w-75 mt-5">
                         <form method="POST" action="/cadastroCliente" class="row g-3 needs-validation border p-4" novalidate>
                             <h2 class="text-center">Cadastro de cliente</h2>
@@ -117,7 +126,7 @@ app.get("/cadastroCliente", verificarAutenticacao,(requisicao, resposta) => {
                                 <label for="uf" class="form-label">UF</label>
                             </div>
                             <div class="form-floating col-md-3">
-                                <input type="text" class="form-control" id="cep" name="cep" required>
+                                <input type="number" class="form-control" id="cep" name="cep" required>
                                 <label for="cep" class="form-label">CEP</label>
                             </div>
                             <div class="form-floating mb-3">
@@ -186,6 +195,7 @@ app.get("/cadastroCliente", verificarAutenticacao,(requisicao, resposta) => {
 });
 
 app.get("/cadastroFornecedor", verificarAutenticacao,(requisicao, resposta) => {
+    const ultimoLogin = requisicao.cookies.ultimoLogin;
     resposta.send(`
         <html lang="pt-br">
             <head>
@@ -194,6 +204,11 @@ app.get("/cadastroFornecedor", verificarAutenticacao,(requisicao, resposta) => {
                 <title>Cadastro de Fornecedor</title>
             </head>
             <body>
+                <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+                    <div class="container-fluid">
+                        <span class=navbar-text ms-auto>${ultimoLogin?"Último login: " + ultimoLogin: ""}</span>
+                    </div>
+                </nav>
                 <main class="container w-75 mt-5">
                     <form method="POST" action="/cadastroFornecedor" class="row g-3 needs-validation border p-4" novalidate>
                         <h2 class="text-center">Cadastro de Fornecedor</h2>
@@ -255,6 +270,64 @@ app.get("/cadastroFornecedor", verificarAutenticacao,(requisicao, resposta) => {
     resposta.end();
 });
 
+app.get("/cadastroProduto", verificarAutenticacao,(requisicao, resposta) => {
+    const ultimoLogin = requisicao.cookies.ultimoLogin;
+    resposta.send(`
+        <html lang="pt-br">
+            <head>
+                <meta charset="UTF-8">
+                <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-4Q6Gf2aSP4eDXB8Miphtr37CMZZQ5oXLH2yaXMJ2w8e2ZtHTl7GptT4jmndRuHDT" crossorigin="anonymous">
+                <title>Cadastro de Produto</title>
+            </head>
+            <body>
+                <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+                    <div class="container-fluid">
+                        <span class=navbar-text ms-auto>${ultimoLogin?"Último login: " + ultimoLogin: ""}</span>
+                    </div>
+                </nav>
+                <main class="container w-75 mt-5">
+                    <form method="POST" action="/cadastroProduto" class="row g-3 needs-validation border p-4" novalidate>
+                        <h2 class="text-center">Cadastro de Produto</h2>
+                        <div class="form-floating col-md-6">
+                            <input type="text" class="form-control" id="produto" name="produto" placeholder="Descrição do produto" required>
+                            <label for="produto" class="form-label">Descrição do produto</label>
+                        </div>
+                        <div class="form-floating col-md-6">
+                            <input type="text" class="form-control" id="fabricante" name="fabricante" placeholder="fabricante" required>
+                            <label for="fabricante" class="form-label">Fabricante</label>
+                        </div>
+                        <div class="form-floating col-md-4">
+                            <input type="number" class="form-control" id="codBarra" name="codBarra" placeholder="Cód. de barra" required>
+                            <label for="codBarra" class="form-label">Código de barra</label>
+                        </div>
+                        <div class="form-floating col-md-4">
+                            <input type="date" class="form-control" id="validade" name="validade" placeholder="Data de validade" required>
+                            <label for="validade">Data de validade</label>
+                        </div>
+                        <div class="form-floating col-md-4">
+                            <input type="number" class="form-control" id="estoque" name="estoque" placeholder="Estoque" required>
+                            <label for="estoque" class="form-label">Estoque</label>
+                        </div>
+                        <div class="form-floating col-md-3">
+                            <input type="number" class="form-control" id="valorVenda" name="valorVenda" placeholder="Preço de venda" required>
+                            <label for="valorVenda" class="form-label">Preço de venda</label>
+                        </div>
+                        <div class="form-floating col-md-3">
+                            <input type="number" class="form-control" id="valorCusto" name="valorCusto" placeholder="Preço de custo" required>
+                            <label for="valorCusto" class="form-label">Preço de custo</label>
+                        </div>
+                        <div class="col-12">
+                            <button class="btn btn-success" type="submit">Cadastrar</button>
+                            <a class="btn btn-secondary" href="/">Voltar</a>
+                        </div>
+                    </form>
+                </main>
+            </body>
+            <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/js/bootstrap.bundle.min.js" integrity="sha384-j1CDi7MgGQ12Z7Qab0qlWQ/Qqz24Gc6BM0thvEMVjHnfYGF0rmFCozFSxQBxwHKO" crossorigin="anonymous"></script>
+        </html>
+    `);
+    resposta.end();
+});
 
 app.post("/cadastroCliente", verificarAutenticacao, (requisicao, resposta) => {
     const nome = requisicao.body.primeiroNome;
@@ -272,6 +345,7 @@ app.post("/cadastroCliente", verificarAutenticacao, (requisicao, resposta) => {
     const check = requisicao.body.check;
     const senha = requisicao.body.senha;
     const confirmSenha = requisicao.body.confirmSenha;
+    const ultimoLogin = requisicao.cookies.ultimoLogin;
 
     if(nome && sobrenome && telefone && cidade && uf && cep && email && contato && tpCliente && unidade && nascimento){
         clientes.push({
@@ -299,6 +373,11 @@ app.post("/cadastroCliente", verificarAutenticacao, (requisicao, resposta) => {
                     <title>Página inicial</title>
                 </head>
                 <body>
+                    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+                        <div class="container-fluid">
+                            <span class=navbar-text ms-auto>${ultimoLogin?"Último login: " + ultimoLogin: ""}</span>
+                        </div>
+                    </nav>
                     <main class="container w-75 mt-5">
                         <form method="POST" action="/cadastroCliente" class="row g-3 needs-validation border p-4" novalidate>
                             <h2 class="text-center">Cadastro de cliente</h2>
@@ -539,6 +618,7 @@ app.post("/cadastroFornecedor", verificarAutenticacao, (requisicao, resposta) =>
     const cep = requisicao.body.cep;
     const email = requisicao.body.email;
     const telefone = requisicao.body.telefone;
+    const ultimoLogin = requisicao.cookies.ultimoLogin;
 
     if(cnpj && razaoSocial && nomeFantasia && endereco && cidade && uf && cep && email && telefone){
         fornecedores.push({
@@ -562,6 +642,11 @@ app.post("/cadastroFornecedor", verificarAutenticacao, (requisicao, resposta) =>
                     <title>Cadastro de Fornecedor</title>
                 </head>
                 <body>
+                    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+                        <div class="container-fluid">
+                            <span class=navbar-text ms-auto>${ultimoLogin?"Último login: " + ultimoLogin: ""}</span>
+                        </div>
+                    </nav>
                     <main class="container w-75 mt-5">
                         <form method="POST" action="/cadastroFornecedor" class="row g-3 needs-validation border p-4" novalidate>
                             <h2 class="text-center">Cadastro de Fornecedor</h2>                          
@@ -705,7 +790,144 @@ app.post("/cadastroFornecedor", verificarAutenticacao, (requisicao, resposta) =>
     }
 });
 
+app.post("/cadastroProduto", verificarAutenticacao, (requisicao, resposta) => {
+    const produto = requisicao.body.produto;
+    const fabricante = requisicao.body.fabricante;
+    const codBarra = requisicao.body.codBarra;
+    const validade = requisicao.body.validade;
+    const estoque = requisicao.body.estoque;
+    const valorVenda = requisicao.body.valorVenda;
+    const valorCusto = requisicao.body.valorCusto;
+    const ultimoLogin = requisicao.cookies.ultimoLogin;
+
+    if(produto && fabricante && codBarra && validade && estoque && valorVenda && valorCusto){
+        produtos.push({
+            produto: produto,
+            fabricante: fabricante,
+            codBarra: codBarra,
+            validade: validade,
+            estoque: estoque,
+            valorVenda: valorVenda,
+            valorCusto: valorCusto
+        });
+        resposta.redirect("/listarProdutos");
+    } else {
+        var conteudo = `
+            <html lang="pt-br">
+            <head>
+                <meta charset="UTF-8">
+                <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-4Q6Gf2aSP4eDXB8Miphtr37CMZZQ5oXLH2yaXMJ2w8e2ZtHTl7GptT4jmndRuHDT" crossorigin="anonymous">
+                <title>Cadastro de Produto</title>
+            </head>
+            <body>
+                <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+                    <div class="container-fluid">
+                        <span class=navbar-text ms-auto>${ultimoLogin?"Último login: " + ultimoLogin: ""}</span>
+                    </div>
+                </nav>
+                <main class="container w-75 mt-5">
+                    <form method="POST" action="/cadastroProduto" class="row g-3 needs-validation border p-4" novalidate>
+                        <h2 class="text-center">Cadastro de Fornecedor</h2>
+                        <div class="form-floating col-md-6">`;
+                            if(!produto){
+                                conteudo +=`
+                                <input type="text" class="form-control" id="produto" name="produto" placeholder="Produto" required>
+                                <label for="produto" class="form-label">Produto</label>
+                                <span class="text-danger">Digite a descrição do produto</span>`;
+                            }else{
+                                conteudo +=`
+                                <input type="text" class="form-control" id="produto" name="produto" value="${produto}" placeholder="Produto" required>
+                                <label for="produto" class="form-label">Produto</label>`;
+                            }
+                        conteudo += `</div>
+                        <div class="form-floating col-md-6">`;
+                            if(!fabricante){
+                                conteudo +=`
+                                <input type="text" class="form-control" id="fabricante" name="fabricante" placeholder="fabricante" required>
+                                <label for="fabricante" class="form-label">Fabricante</label>
+                                <span class="text-danger">Digite o fabricante</span>`;
+                            }else{
+                                conteudo +=`
+                                <input type="text" class="form-control" id="fabricante" name="fabricante" value="${fabricante}" placeholder="fabricante" required>
+                                <label for="fabricante" class="form-label">Fabricante</label>`;
+                            }
+                        conteudo += `</div>
+                        <div class="form-floating col-md-4">`;
+                            if(!codBarra){
+                                conteudo +=`
+                                <input type="number" class="form-control" id="codBarra" name="codBarra" placeholder="Cód. de barra" required>
+                                <label for="codBarra" class="form-label">Código de barra</label>
+                                <span class="text-danger">Digite o código de barras</span>`;
+                            }else{
+                                conteudo+=`
+                                <input type="number" class="form-control" id="codBarra" name="codBarra" value="${codBarra}" placeholder="Cód. de barra" required>
+                                <label for="codBarra" class="form-label">Código de barra</label>`;
+                            }
+                        conteudo += `</div>
+                        <div class="form-floating col-md-4">`;
+                            if(!validade){
+                                conteudo +=`
+                                <input type="date" class="form-control" id="validade" name="validade" placeholder="Data de validade" required>
+                                <label for="validade">Data de validade</label>
+                                <span class="text-danger">Digite a data de validade</span>`;
+                            }else{
+                                conteudo +=`
+                                input type="date" class="form-control" id="validade" name="validade" value="${validade}" placeholder="Data de validade" required>
+                                <label for="validade">Data de validade</label>`;
+                            }
+                        conteudo += `</div>
+                        <div class="form-floating col-md-4">`;
+                            if(!estoque){
+                                conteudo +=`
+                                <input type="number" class="form-control" id="estoque" name="estoque" placeholder="Estoque" required>
+                                <label for="estoque" class="form-label">Estoque</label>
+                                <span class="text-danger">Digite a quantidade em estoque</span>`;
+                            }else{
+                                conteudo +=`
+                                <input type="number" class="form-control" id="estoque" name="estoque" value="${estoque}" placeholder="Estoque" required>
+                                <label for="estoque" class="form-label">Estoque</label>`;
+                            }
+                        conteudo += `</div>
+                        <div class="form-floating col-md-3">`;
+                            if(!valorVenda){
+                                conteudo +=`
+                                <input type="number" class="form-control" id="valorVenda" name="valorVenda" placeholder="Preço de venda" required>
+                                <label for="valorVenda" class="form-label">Preço de venda</label>
+                                <span class="text-danger">Digite o preço de venda</span>`;
+                            }else{
+                                conteudo +=`
+                                <input type="number" class="form-control" id="valorVenda" name="valorVenda" value="${valorVenda}" placeholder="Preço de venda" required>
+                                <label for="valorVenda" class="form-label">Preço de venda</label>`
+                            }  
+                        conteudo += `</div>
+                        <div class="form-floating col-md-3">`;
+                            if(!valorCusto){
+                                conteudo +=`
+                                <input type="number" class="form-control" id="valorCusto" name="valorCusto" placeholder="Preço de custo" required>
+                                <label for="valorCusto" class="form-label">Preço de custo</label>
+                                <span class="text-danger">Digite o preço de custo</span>`;
+                            }else{
+                                conteudo +=`
+                                <input type="number" class="form-control" id="valorCusto" name="valorCusto" value="${valorCusto}" placeholder="Preço de custo" required>
+                                <label for="valorCusto" class="form-label">Preço de custo</label>`;
+                            }
+                        conteudo += `</div>
+                        <div class="col-12">
+                            <button class="btn btn-success" type="submit">Cadastrar</button>
+                            <a class="btn btn-secondary" href="/">Voltar</a>
+                        </div>
+                    </form>
+                </main>
+            </body>
+            <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/js/bootstrap.bundle.min.js" integrity="sha384-j1CDi7MgGQ12Z7Qab0qlWQ/Qqz24Gc6BM0thvEMVjHnfYGF0rmFCozFSxQBxwHKO" crossorigin="anonymous"></script>
+        </html>`;
+        resposta.send(conteudo);
+        resposta.end();
+    }
+});
+
 app.get("/listaClientes", verificarAutenticacao, (requisicao, resposta) => {
+    const ultimoLogin = requisicao.cookies.ultimoLogin;
     let conteudo =`
             <html lang="pt-br">
                 <head>
@@ -714,6 +936,11 @@ app.get("/listaClientes", verificarAutenticacao, (requisicao, resposta) => {
                     <title>Página inicial</title>
                 </head>
                 <body>
+                    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+                        <div class="container-fluid">
+                            <span class=navbar-text ms-auto>${ultimoLogin?"Último login: " + ultimoLogin: ""}</span>
+                        </div>
+                    </nav>
                     <main class="container-fluid p-4 mt-5">
                         <h2 class="text-center mb-3">Lista de clientes</h2>
                         <table class="table table-striped table-hover">
@@ -767,6 +994,7 @@ app.get("/listaClientes", verificarAutenticacao, (requisicao, resposta) => {
 });
 
 app.get("/listarFornecedores", verificarAutenticacao, (requisicao, resposta) => {
+    const ultimoLogin = requisicao.cookies.ultimoLogin;
     let conteudo =`
         <html lang="pt-br">
             <head>
@@ -775,6 +1003,11 @@ app.get("/listarFornecedores", verificarAutenticacao, (requisicao, resposta) => 
                 <title>Lista de Fornecedores</title>
             </head>
             <body>
+                <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+                    <div class="container-fluid">
+                        <span class=navbar-text ms-auto>${ultimoLogin?"Último login: " + ultimoLogin: ""}</span>
+                    </div>
+                </nav>
                 <main class="container-fluid p-4 mt-5">
                     <h2 class="text-center mb-3">Lista de Fornecedores</h2>
                     <table class="table table-striped table-hover">
@@ -811,6 +1044,62 @@ app.get("/listarFornecedores", verificarAutenticacao, (requisicao, resposta) => 
                         </tbody>
                     </table>
                     <a class="btn btn-success mt-5" href="/cadastroFornecedor">Novo Cadastro</a>
+                    <a class="btn btn-secondary mt-5" href="/">Voltar</a>
+                </main>
+            </body>
+            <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/js/bootstrap.bundle.min.js"></script>
+        </html>`;
+    resposta.send(conteudo);
+    resposta.end();
+});
+
+app.get("/listarProdutos", verificarAutenticacao, (requisicao, resposta) => {
+    const ultimoLogin = requisicao.cookies.ultimoLogin;
+    let conteudo =`
+        <html lang="pt-br">
+            <head>
+                <meta charset="UTF-8">
+                <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/css/bootstrap.min.css" rel="stylesheet">
+                <title>Lista de Produtos</title>
+            </head>
+            <body>
+                <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+                    <div class="container-fluid">
+                        <span class=navbar-text ms-auto>${ultimoLogin?"Último login: " + ultimoLogin: ""}</span>
+                    </div>
+                </nav>
+                <main class="container-fluid p-4 mt-5">
+                    <h2 class="text-center mb-3">Lista de Produtos</h2>
+                    <table class="table table-striped table-hover">
+                        <thead>
+                            <tr>
+                                <th scope="col">Produto</th>
+                                <th scope="col">Fabricante</th>
+                                <th scope="col">Cód. de barras</th>
+                                <th scope="col">Qtd. estoque</th>
+                                <th scope="col">Data de validade</th>
+                                <th scope="col">Preço de venda</th>
+                                <th scope="col">Preço de custo</th>
+                            </tr>
+                        </thead>
+                        <tbody>`;
+                            for(let i = 0; i < produtos.length; i++){
+                                conteudo += `
+                                    <tr>
+                                        <td>${produtos[i].produto}</td>
+                                        <td>${produtos[i].fabricante}</td>
+                                        <td>${produtos[i].codBarra}</td>
+                                        <td>${produtos[i].estoque}</td>
+                                        <td>${produtos[i].validade}</td>
+                                        <td>${produtos[i].valorVenda}</td>
+                                        <td>${produtos[i].valorCusto}</td>
+                                    </tr>
+                                `;
+                            }
+                conteudo += `
+                        </tbody>
+                    </table>
+                    <a class="btn btn-success mt-5" href="/cadastroProduto">Novo Cadastro</a>
                     <a class="btn btn-secondary mt-5" href="/">Voltar</a>
                 </main>
             </body>

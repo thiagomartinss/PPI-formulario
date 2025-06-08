@@ -3,3 +3,11 @@ Link vercel: https://ppi-formulario.vercel.app/
 Link gitHub: https://github.com/thiagomartinss/PPI-formulario
 
 Thiago Martins - RA 10442428662
+
+** professor como tinhamos conversado em sala de aula
+eu usei a mesma aplicação, porém incrementando os endpoints
+
+Para executar é necessário instalar os módulos
+npm install
+npm install express-session
+npm install cookie-parser
